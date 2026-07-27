@@ -1012,7 +1012,8 @@ internal class ChildProvider @Inject constructor(
                 componentContext = componentContext,
                 workflowId = config.workflowId,
                 initialUris = config.uris,
-                onGoBack = ::navigateBack
+                onGoBack = ::navigateBack,
+                onNavigate = ::navigateTo
             )
         )
 

@@ -80,19 +80,22 @@ internal class WorkflowEngineImpl @Inject constructor(
         uris: List<String>
     ): Flow<WorkflowRunEvent> = channelFlow {
         val savedPaths = mutableListOf<String>()
+        val savedUris = mutableListOf<String>()
         var successCount = 0
         var failureCount = 0
 
         uris.forEachIndexed { imageIndex, uri ->
-            val savedPath = processImage(
+            val result = processImage(
                 imageIndex = imageIndex,
                 imageCount = uris.size,
                 uri = uri,
                 steps = workflow.steps
             )
 
-            if (savedPath != null) {
+            if (result != null) {
+                val (savedPath, savedUri) = result
                 savedPaths += savedPath
+                savedUri?.let { savedUris += it }
                 successCount++
             } else {
                 failureCount++
@@ -105,7 +108,8 @@ internal class WorkflowEngineImpl @Inject constructor(
             WorkflowRunEvent.Finished(
                 successCount = successCount,
                 failureCount = failureCount,
-                savedPaths = savedPaths
+                savedPaths = savedPaths,
+                savedUris = savedUris
             )
         )
     }.flowOn(dispatchersHolder.defaultDispatcher)
@@ -151,7 +155,7 @@ internal class WorkflowEngineImpl @Inject constructor(
         imageCount: Int,
         uri: String,
         steps: List<WorkflowStep>
-    ): String? {
+    ): Pair<String, String?>? {
         val imageData = runSuspendCatching {
             imageGetter.getImage(
                 uri = uri,
@@ -435,10 +439,11 @@ internal class WorkflowEngineImpl @Inject constructor(
                 send(
                     WorkflowRunEvent.ImageDone(
                         imageIndex = imageIndex,
-                        savedPath = saveResult.savingPath
+                        savedPath = saveResult.savingPath,
+                        savedUri = saveResult.savedUri
                     )
                 )
-                saveResult.savingPath
+                saveResult.savingPath to saveResult.savedUri
             }
 
             else -> {

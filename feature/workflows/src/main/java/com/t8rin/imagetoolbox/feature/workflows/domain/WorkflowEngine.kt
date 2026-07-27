@@ -52,13 +52,15 @@ sealed interface WorkflowRunEvent {
 
     data class ImageDone(
         val imageIndex: Int,
-        val savedPath: String?        // human-readable saved location, null if unknown
+        val savedPath: String?,       // human-readable saved location, null if unknown
+        val savedUri: String? = null  // actual content/file uri of the saved result, for sharing
     ) : WorkflowRunEvent
 
     data class Finished(
         val successCount: Int,
         val failureCount: Int,
-        val savedPaths: List<String>
+        val savedPaths: List<String>,
+        val savedUris: List<String> = emptyList()
     ) : WorkflowRunEvent
 }
 

@@ -253,7 +253,8 @@ internal class AndroidFileController @Inject constructor(
                         ),
                         isOverwritten = true,
                         savingPath = savingPath,
-                        savedBytes = data.size.toLong()
+                        savedBytes = data.size.toLong(),
+                        savedUri = originalUri.toString()
                     )
                 }
             } else {
@@ -397,7 +398,8 @@ internal class AndroidFileController @Inject constructor(
                         }
                     } else null,
                     savingPath = actualSavingPath,
-                    savedBytes = data.size.toLong()
+                    savedBytes = data.size.toLong(),
+                    savedUri = savingFolder.fileUri.toString()
                 )
             }
         }.onFailure {

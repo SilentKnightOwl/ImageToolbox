@@ -86,8 +86,10 @@ import com.t8rin.imagetoolbox.core.resources.icons.SettingsBackupRestore
 import com.t8rin.imagetoolbox.core.resources.icons.TextFields
 import com.t8rin.imagetoolbox.core.resources.icons.Visibility
 import com.t8rin.imagetoolbox.core.resources.icons.VisibilityOff
+import com.t8rin.imagetoolbox.core.resources.icons.VectorPolyline
 import com.t8rin.imagetoolbox.core.ui.theme.ImageToolboxThemeForPreview
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
+import com.t8rin.imagetoolbox.core.ui.utils.navigation.WorkflowShareEntry
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.matchesSearchQuery
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
@@ -98,6 +100,7 @@ import com.t8rin.imagetoolbox.core.ui.widget.image.UrisCarousel
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.shapeByInteraction
+import com.t8rin.imagetoolbox.core.ui.widget.preferences.PreferenceItem
 import com.t8rin.imagetoolbox.core.ui.widget.preferences.ScreenPreference
 import com.t8rin.imagetoolbox.core.ui.widget.sheets.ProcessImagesSheetTitle.Companion.processImagesSheetTitle
 import com.t8rin.imagetoolbox.core.ui.widget.text.AutoSizeText
@@ -112,7 +115,8 @@ fun ProcessImagesPreferenceSheet(
     extraDataType: ExtraDataType? = null,
     visible: Boolean,
     onDismiss: () -> Unit,
-    onNavigate: (Screen) -> Unit
+    onNavigate: (Screen) -> Unit,
+    workflows: List<WorkflowShareEntry> = emptyList()
 ) {
     var isSearching by rememberSaveable {
         mutableStateOf(false)
@@ -252,6 +256,31 @@ fun ProcessImagesPreferenceSheet(
                                 span = StaggeredGridItemSpan.FullLine
                             ) {
                                 UrisCarousel(uris)
+                            }
+                        }
+                        if (workflows.isNotEmpty() && extraDataType == null) {
+                            item(
+                                span = StaggeredGridItemSpan.FullLine
+                            ) {
+                                TitleItem(
+                                    text = stringResource(R.string.workflows),
+                                    icon = Icons.Outlined.VectorPolyline,
+                                    modifier = Modifier.padding(bottom = 4.dp)
+                                )
+                            }
+                            items(
+                                items = workflows,
+                                key = { "workflow_${it.id}" }
+                            ) { entry ->
+                                PreferenceItem(
+                                    onClick = {
+                                        onNavigate(Screen.WorkflowRunner(entry.id, uris))
+                                        onDismiss()
+                                    },
+                                    startIcon = Icons.Outlined.VectorPolyline,
+                                    title = entry.name,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
                             }
                         }
                         items(

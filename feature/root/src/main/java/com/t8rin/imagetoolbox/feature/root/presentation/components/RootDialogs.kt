@@ -18,9 +18,12 @@
 package com.t8rin.imagetoolbox.feature.root.presentation.components
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalEditPresetsController
 import com.t8rin.imagetoolbox.core.ui.utils.helper.Clipboard
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ReviewHandler
+import com.t8rin.imagetoolbox.core.ui.utils.navigation.WorkflowShareEntry
 import com.t8rin.imagetoolbox.core.ui.widget.sheets.ProcessImagesPreferenceSheet
 import com.t8rin.imagetoolbox.core.ui.widget.sheets.UpdateSheet
 import com.t8rin.imagetoolbox.feature.root.presentation.components.dialogs.AppExitDialog
@@ -46,6 +49,8 @@ internal fun RootDialogs(component: RootComponent) {
         onUpdatePresets = component::setPresets
     )
 
+    val workflows by component.workflows.collectAsStateWithLifecycle()
+
     ProcessImagesPreferenceSheet(
         uris = component.uris ?: emptyList(),
         extraDataType = component.extraDataType,
@@ -54,7 +59,8 @@ internal fun RootDialogs(component: RootComponent) {
         onNavigate = { screen ->
             component.navigateTo(screen)
             Clipboard.clear()
-        }
+        },
+        workflows = workflows.map { WorkflowShareEntry(it.id, it.name) }
     )
 
     UpdateSheet(

@@ -64,6 +64,8 @@ import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.Ch
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild
 import com.t8rin.imagetoolbox.feature.root.presentation.components.utils.BackEventObserver
 import com.t8rin.imagetoolbox.feature.settings.presentation.screenLogic.SettingsComponent
+import com.t8rin.imagetoolbox.feature.workflows.domain.WorkflowRepository
+import com.t8rin.imagetoolbox.feature.workflows.domain.model.Workflow
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -75,9 +77,12 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 
 class RootComponent @AssistedInject internal constructor(
@@ -90,6 +95,7 @@ class RootComponent @AssistedInject internal constructor(
     private val filterParamsInteractor: FilterParamsInteractor,
     private val fileController: FileController,
     private val appHistoryRepository: AppHistoryRepository,
+    private val workflowRepository: WorkflowRepository,
     autoCacheCleanupUseCase: AutoCacheCleanupUseCase,
     dispatchersHolder: DispatchersHolder,
     settingsComponentFactory: SettingsComponent.Factory,
@@ -153,6 +159,9 @@ class RootComponent @AssistedInject internal constructor(
 
     private val _showSelectDialog = mutableStateOf(false)
     val showSelectDialog by _showSelectDialog
+
+    val workflows: StateFlow<List<Workflow>> = workflowRepository.workflows
+        .stateIn(componentScope, SharingStarted.Eagerly, emptyList())
 
     private val _showUpdateDialog = mutableStateOf(false)
     val showUpdateDialog by _showUpdateDialog

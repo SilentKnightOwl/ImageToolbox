@@ -26,6 +26,7 @@ sealed class SaveResult(
         override val savingPath: String,
         val isOverwritten: Boolean = false,
         val savedBytes: Long = 0,
+        val savedUri: String? = null,
     ) : SaveResult(savingPath)
 
     sealed class Error(open val throwable: Throwable) : SaveResult("") {
