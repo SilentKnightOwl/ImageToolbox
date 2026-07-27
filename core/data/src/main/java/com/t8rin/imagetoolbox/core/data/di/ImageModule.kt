@@ -25,6 +25,7 @@ import com.t8rin.imagetoolbox.core.data.image.AndroidImageScaler
 import com.t8rin.imagetoolbox.core.data.image.AndroidImageTransformer
 import com.t8rin.imagetoolbox.core.data.image.AndroidShareProvider
 import com.t8rin.imagetoolbox.core.data.image.ImageExportProfilesUseCaseImpl
+import com.t8rin.imagetoolbox.core.data.presets.ToolPresetsUseCaseFactoryImpl
 import com.t8rin.imagetoolbox.core.domain.image.ImageCompressor
 import com.t8rin.imagetoolbox.core.domain.image.ImageExportProfilesUseCase
 import com.t8rin.imagetoolbox.core.domain.image.ImageGetter
@@ -33,6 +34,7 @@ import com.t8rin.imagetoolbox.core.domain.image.ImageScaler
 import com.t8rin.imagetoolbox.core.domain.image.ImageShareProvider
 import com.t8rin.imagetoolbox.core.domain.image.ImageTransformer
 import com.t8rin.imagetoolbox.core.domain.image.ShareProvider
+import com.t8rin.imagetoolbox.core.domain.presets.ToolPresetsUseCaseFactory
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -90,5 +92,11 @@ internal interface ImageModule {
     fun provideImageExportProfilesUseCase(
         useCase: ImageExportProfilesUseCaseImpl
     ): ImageExportProfilesUseCase
+
+    @Singleton
+    @Binds
+    fun provideToolPresetsUseCaseFactory(
+        factory: ToolPresetsUseCaseFactoryImpl
+    ): ToolPresetsUseCaseFactory
 
 }

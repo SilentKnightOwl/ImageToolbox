@@ -43,6 +43,7 @@ import com.t8rin.imagetoolbox.core.resources.icons.Memory
 import com.t8rin.imagetoolbox.core.resources.icons.Stacks
 import com.t8rin.imagetoolbox.core.resources.icons.WarningAmber
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.ImageFormatSelector
+import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.ToolPresetSelector
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedSliderItem
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.derivative.OnlyAllowedSliderItem
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
@@ -60,6 +61,9 @@ internal fun AiToolsControls(component: AiToolsComponent) {
     val occupiedStorageSize by component.occupiedStorageSize.collectAsStateWithLifecycle()
     val isModelChunkable = selectedModel?.isNonChunkable != true
     val isChunkable = isModelChunkable && component.params.enableChunking
+
+    ToolPresetSelector(holder = component)
+    Spacer(Modifier.height(8.dp))
 
     NeuralModelSelector(
         value = selectedModel,

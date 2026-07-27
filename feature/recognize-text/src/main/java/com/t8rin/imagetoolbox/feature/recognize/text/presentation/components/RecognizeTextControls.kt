@@ -46,6 +46,7 @@ import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberImagePicker
 import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.widget.controls.ImageTransformBar
+import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.ToolPresetSelector
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
 import com.t8rin.imagetoolbox.core.ui.widget.other.LinkPreviewList
 import com.t8rin.imagetoolbox.feature.recognize.text.domain.RecognitionEngine
@@ -90,6 +91,9 @@ internal fun RecognizeTextControls(
     }
 
     val onImportLanguages: () -> Unit = importLanguagesPicker::pickFile
+
+    ToolPresetSelector(holder = component)
+    Spacer(modifier = Modifier.height(8.dp))
 
     if (isExtraction) {
         ImageTransformBar(

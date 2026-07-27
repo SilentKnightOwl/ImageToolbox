@@ -32,6 +32,8 @@ import com.t8rin.imagetoolbox.core.domain.image.ImageGetter
 import com.t8rin.imagetoolbox.core.domain.image.ImageShareProvider
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageFormat
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageInfo
+import com.t8rin.imagetoolbox.core.domain.presets.ToolPreset
+import com.t8rin.imagetoolbox.core.domain.presets.ToolPresetsUseCaseFactory
 import com.t8rin.imagetoolbox.core.domain.remote.DownloadProgress
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
 import com.t8rin.imagetoolbox.core.domain.saving.model.ImageSaveTarget
@@ -45,14 +47,18 @@ import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.CheckCircle
 import com.t8rin.imagetoolbox.core.resources.icons.Info
 import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
+import com.t8rin.imagetoolbox.core.ui.utils.ToolPresetsHolder
 import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
+import com.t8rin.imagetoolbox.core.ui.utils.navigation.coroutineScope
 import com.t8rin.imagetoolbox.core.ui.utils.state.savable
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
 import com.t8rin.imagetoolbox.core.ui.utils.state.updateNotNull
 import com.t8rin.imagetoolbox.core.utils.getString
 import com.t8rin.imagetoolbox.feature.ai_tools.domain.AiProgressListener
 import com.t8rin.imagetoolbox.feature.ai_tools.domain.AiToolsRepository
+import com.t8rin.imagetoolbox.feature.ai_tools.domain.model.AI_TOOLS_PRESETS_TOOL_KEY
+import com.t8rin.imagetoolbox.feature.ai_tools.domain.model.AiToolsPresetPayload
 import com.t8rin.imagetoolbox.feature.ai_tools.domain.model.NeuralModel
 import com.t8rin.imagetoolbox.feature.ai_tools.domain.model.NeuralParams
 import com.t8rin.imagetoolbox.feature.ai_tools.presentation.components.AiToolsPreviewResult
@@ -79,8 +85,21 @@ class AiToolsComponent @AssistedInject internal constructor(
     private val imageGetter: ImageGetter<Bitmap>,
     private val fileController: FileController,
     private val imageCompressor: ImageCompressor<Bitmap>,
+    private val toolPresetsUseCaseFactory: ToolPresetsUseCaseFactory,
     dispatchersHolder: DispatchersHolder
-) : BaseComponent(dispatchersHolder, componentContext) {
+) : BaseComponent(dispatchersHolder, componentContext),
+    ToolPresetsHolder<AiToolsPresetPayload> by ToolPresetsHolder(
+        useCase = toolPresetsUseCaseFactory.create(
+            toolKey = AI_TOOLS_PRESETS_TOOL_KEY,
+            payloadType = AiToolsPresetPayload::class.java
+        ),
+        componentScope = componentContext.coroutineScope
+    ) {
+
+    private val aiPresetsUseCase = toolPresetsUseCaseFactory.create(
+        toolKey = AI_TOOLS_PRESETS_TOOL_KEY,
+        payloadType = AiToolsPresetPayload::class.java
+    )
 
     init {
         debounce {
@@ -463,6 +482,45 @@ class AiToolsComponent @AssistedInject internal constructor(
 
     fun getFormatForFilenameSelection(): ImageFormat? = imageFormat?.takeIf {
         uris?.size == 1
+    }
+
+    override fun saveToolPreset(name: String) {
+        componentScope.launch {
+            aiPresetsUseCase.upsert(
+                ToolPreset(
+                    name = name,
+                    payload = AiToolsPresetPayload(
+                        modelName = selectedModel.value?.name,
+                        strength = params.strength,
+                        chunkSize = params.chunkSize,
+                        overlap = params.overlap,
+                        enableChunking = params.enableChunking,
+                        parallelWorkers = params.parallelWorkers,
+                        imageFormatTitle = imageFormat?.title
+                    )
+                )
+            )
+        }
+    }
+
+    override fun applyToolPreset(preset: ToolPreset<AiToolsPresetPayload>) {
+        val payload = preset.payload
+
+        payload.modelName?.let { modelName ->
+            downloadedModels.value.firstOrNull { it.name == modelName }?.let(::selectModel)
+        }
+
+        updateParams {
+            copy(
+                strength = payload.strength,
+                chunkSize = payload.chunkSize,
+                overlap = payload.overlap,
+                enableChunking = payload.enableChunking,
+                parallelWorkers = payload.parallelWorkers
+            )
+        }
+
+        setImageFormat(ImageFormat.fromTitle(payload.imageFormatTitle))
     }
 
     @AssistedFactory

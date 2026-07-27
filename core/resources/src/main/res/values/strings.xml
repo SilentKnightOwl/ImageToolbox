@@ -3376,6 +3376,13 @@
     <string name="save_export_profile">Save current profile</string>
     <string name="delete_export_profile">Delete export profile</string>
     <string name="delete_export_profile_sub">Do you want to delete export profile \"%1$s\"?</string>
+    <string name="tool_presets">Presets</string>
+    <string name="save_tool_preset">Save current settings</string>
+    <string name="delete_tool_preset">Delete preset</string>
+    <string name="delete_tool_preset_sub">Do you want to delete preset \"%1$s\"?</string>
+    <string name="tool_preset_wrong_tool">This preset file was made for a different tool</string>
+    <string name="tool_preset_invalid">Could not read this preset file</string>
+    <string name="tool_preset_imported">Preset imported</string>
     <string name="watermark_filename_placeholder">Placeholder</string>
     <string name="watermark_filename_placeholder_sub">Use {filename} to insert the original filename without extension</string>
     <string name="search_keywords_texture_generation">texture generator brushed metal caustics cellular checkerboard marble plasma quilt wood brick camouflage cell cloud crack fabric foliage honeycomb ice lava nebula paper rust sand smoke stone terrain topography water ripple</string>

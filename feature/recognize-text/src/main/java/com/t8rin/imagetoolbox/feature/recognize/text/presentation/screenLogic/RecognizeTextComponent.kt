@@ -44,6 +44,8 @@ import com.t8rin.imagetoolbox.core.domain.image.model.MetadataTag
 import com.t8rin.imagetoolbox.core.domain.model.DomainAspectRatio
 import com.t8rin.imagetoolbox.core.domain.model.IntegerSize
 import com.t8rin.imagetoolbox.core.domain.model.MimeType
+import com.t8rin.imagetoolbox.core.domain.presets.ToolPreset
+import com.t8rin.imagetoolbox.core.domain.presets.ToolPresetsUseCaseFactory
 import com.t8rin.imagetoolbox.core.domain.remote.DownloadProgress
 import com.t8rin.imagetoolbox.core.domain.resource.ResourceManager
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
@@ -68,9 +70,11 @@ import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.Language
 import com.t8rin.imagetoolbox.core.settings.domain.SettingsManager
 import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
+import com.t8rin.imagetoolbox.core.ui.utils.ToolPresetsHolder
 import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ImageUtils.safeAspectRatio
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
+import com.t8rin.imagetoolbox.core.ui.utils.navigation.coroutineScope
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
 import com.t8rin.imagetoolbox.core.utils.imageSize
 import com.t8rin.imagetoolbox.feature.pdf_tools.domain.PdfManager
@@ -78,7 +82,9 @@ import com.t8rin.imagetoolbox.feature.pdf_tools.domain.model.SearchablePdfPage
 import com.t8rin.imagetoolbox.feature.recognize.text.domain.DownloadData
 import com.t8rin.imagetoolbox.feature.recognize.text.domain.ImageTextReader
 import com.t8rin.imagetoolbox.feature.recognize.text.domain.OCRLanguage
+import com.t8rin.imagetoolbox.feature.recognize.text.domain.OCR_PRESETS_TOOL_KEY
 import com.t8rin.imagetoolbox.feature.recognize.text.domain.OcrEngineMode
+import com.t8rin.imagetoolbox.feature.recognize.text.domain.OcrPresetPayload
 import com.t8rin.imagetoolbox.feature.recognize.text.domain.PaddleOCRModel
 import com.t8rin.imagetoolbox.feature.recognize.text.domain.RecognitionData
 import com.t8rin.imagetoolbox.feature.recognize.text.domain.RecognitionEngine
@@ -112,9 +118,23 @@ class RecognizeTextComponent @AssistedInject internal constructor(
     private val fileController: FileController,
     private val pdfManager: PdfManager,
     private val filenameCreator: FilenameCreator,
+    private val toolPresetsUseCaseFactory: ToolPresetsUseCaseFactory,
     resourceManager: ResourceManager,
     dispatchersHolder: DispatchersHolder
-) : BaseComponent(dispatchersHolder, componentContext), ResourceManager by resourceManager {
+) : BaseComponent(dispatchersHolder, componentContext),
+    ResourceManager by resourceManager,
+    ToolPresetsHolder<OcrPresetPayload> by ToolPresetsHolder(
+        useCase = toolPresetsUseCaseFactory.create(
+            toolKey = OCR_PRESETS_TOOL_KEY,
+            payloadType = OcrPresetPayload::class.java
+        ),
+        componentScope = componentContext.coroutineScope
+    ) {
+
+    private val ocrPresetsUseCase = toolPresetsUseCaseFactory.create(
+        toolKey = OCR_PRESETS_TOOL_KEY,
+        payloadType = OcrPresetPayload::class.java
+    )
 
     init {
         debounce {
@@ -1096,6 +1116,71 @@ class RecognizeTextComponent @AssistedInject internal constructor(
         _params.update { newParams }
         startRecognition()
     }
+
+    override fun saveToolPreset(name: String) {
+        componentScope.launch {
+            ocrPresetsUseCase.upsert(
+                ToolPreset(
+                    name = name,
+                    payload = capturePresetPayload()
+                )
+            )
+        }
+    }
+
+    private fun capturePresetPayload(): OcrPresetPayload = OcrPresetPayload(
+        recognitionType = recognitionType.name,
+        recognitionEngine = recognitionEngine.name,
+        paddleOCRModel = paddleOCRModel.name,
+        segmentationMode = segmentationMode.name,
+        ocrEngineMode = ocrEngineMode.name,
+        languageCodes = selectedLanguages.map { it.code },
+        tessParams = params.tessParamList.associate { it.key to it.stringValue },
+        tessCustomParams = params.tessCustomParams,
+        contrastFilterEnabled = filtersAdded.contains(contrastFilterInstance),
+        thresholdFilterEnabled = filtersAdded.contains(thresholdFilterInstance),
+        sharpnessFilterEnabled = filtersAdded.contains(sharpenFilterInstance)
+    )
+
+    override fun applyToolPreset(preset: ToolPreset<OcrPresetPayload>) {
+        val payload = preset.payload
+
+        payload.recognitionType.toEnumOrNull<RecognitionType>()?.let(::setRecognitionType)
+        payload.recognitionEngine.toEnumOrNull<RecognitionEngine>()?.let(::setRecognitionEngine)
+        payload.paddleOCRModel.toEnumOrNull<PaddleOCRModel>()?.let(::setPaddleOCRModel)
+        payload.segmentationMode.toEnumOrNull<SegmentationMode>()?.let(::setSegmentationMode)
+        payload.ocrEngineMode.toEnumOrNull<OcrEngineMode>()?.let(::setOcrEngineMode)
+
+        if (payload.languageCodes.isNotEmpty()) {
+            val resolved = languages.filter { it.code in payload.languageCodes }
+            if (resolved.isNotEmpty()) onLanguagesSelected(resolved)
+        }
+
+        var newParams = TessParams.Default
+        payload.tessParams.forEach { (key, stored) ->
+            newParams = newParams.update(key) { old ->
+                when (old) {
+                    is Boolean -> stored == "1" || stored.equals("true", ignoreCase = true)
+                    is Int -> stored.toIntOrNull() ?: old
+                    else -> old
+                }
+            }
+        }
+        updateParams(newParams.update(newCustomParams = payload.tessCustomParams))
+
+        if (filtersAdded.contains(contrastFilterInstance) != payload.contrastFilterEnabled) {
+            toggleContrastFilter()
+        }
+        if (filtersAdded.contains(thresholdFilterInstance) != payload.thresholdFilterEnabled) {
+            toggleThresholdFilter()
+        }
+        if (filtersAdded.contains(sharpenFilterInstance) != payload.sharpnessFilterEnabled) {
+            toggleSharpnessFilter()
+        }
+    }
+
+    private inline fun <reified E : Enum<E>> String.toEnumOrNull(): E? =
+        runCatching { enumValueOf<E>(this) }.getOrNull()
 
     fun cancelSaving() {
         recognitionJob?.cancel()
