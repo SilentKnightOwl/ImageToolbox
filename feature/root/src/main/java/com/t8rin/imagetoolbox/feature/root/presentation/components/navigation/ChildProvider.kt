@@ -162,6 +162,9 @@ import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.Na
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.Watermarking
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.WebpTools
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.WeightResize
+import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.WorkflowEditor
+import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.WorkflowRunner
+import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.Workflows
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.Zip
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.ZipConvertPdfTool
 import com.t8rin.imagetoolbox.feature.root.presentation.screenLogic.RootComponent
@@ -182,6 +185,9 @@ import com.t8rin.imagetoolbox.library_details.presentation.screenLogic.LibraryDe
 import com.t8rin.imagetoolbox.noise_generation.presentation.screenLogic.NoiseGenerationComponent
 import com.t8rin.imagetoolbox.presentation.app_logs.screenLogic.AppLogsComponent
 import com.t8rin.imagetoolbox.texture_generation.presentation.screenLogic.TextureGenerationComponent
+import com.t8rin.imagetoolbox.feature.workflows.presentation.screenLogic.WorkflowEditorComponent
+import com.t8rin.imagetoolbox.feature.workflows.presentation.screenLogic.WorkflowRunnerComponent
+import com.t8rin.imagetoolbox.feature.workflows.presentation.screenLogic.WorkflowsComponent
 import javax.inject.Inject
 
 internal class ChildProvider @Inject constructor(
@@ -266,6 +272,9 @@ internal class ChildProvider @Inject constructor(
     private val removeAnnotationsPdfToolComponentFactory: RemoveAnnotationsPdfToolComponent.Factory,
     private val helpComponentFactory: HelpComponent.Factory,
     private val batchRenameComponentFactory: BatchRenameComponent.Factory,
+    private val workflowsComponentFactory: WorkflowsComponent.Factory,
+    private val workflowEditorComponentFactory: WorkflowEditorComponent.Factory,
+    private val workflowRunnerComponentFactory: WorkflowRunnerComponent.Factory,
 ) {
     fun RootComponent.createChild(
         config: Screen,
@@ -976,6 +985,32 @@ internal class ChildProvider @Inject constructor(
         is Screen.BatchRename -> BatchRename(
             batchRenameComponentFactory(
                 componentContext = componentContext,
+                initialUris = config.uris,
+                onGoBack = ::navigateBack
+            )
+        )
+
+        Screen.Workflows -> Workflows(
+            workflowsComponentFactory(
+                componentContext = componentContext,
+                onGoBack = ::navigateBack,
+                onNavigate = ::navigateTo
+            )
+        )
+
+        is Screen.WorkflowEditor -> WorkflowEditor(
+            workflowEditorComponentFactory(
+                componentContext = componentContext,
+                workflowId = config.workflowId,
+                onGoBack = ::navigateBack,
+                onNavigate = ::navigateTo
+            )
+        )
+
+        is Screen.WorkflowRunner -> WorkflowRunner(
+            workflowRunnerComponentFactory(
+                componentContext = componentContext,
+                workflowId = config.workflowId,
                 initialUris = config.uris,
                 onGoBack = ::navigateBack
             )

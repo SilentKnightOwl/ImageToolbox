@@ -1103,6 +1103,32 @@ sealed class Screen(
         subtitle = R.string.duplicate_finder_sub
     )
 
+    @Serializable
+    data object Workflows : Screen(
+        id = 72,
+        title = R.string.workflows,
+        subtitle = R.string.workflows_sub
+    )
+
+    @Serializable
+    data class WorkflowEditor(
+        val workflowId: String? = null   // null => create new workflow
+    ) : Screen(
+        id = 73,
+        title = R.string.workflow_editor,
+        subtitle = R.string.workflow_editor_sub
+    )
+
+    @Serializable
+    data class WorkflowRunner(
+        val workflowId: String,
+        val uris: List<Uri>? = null      // images to process; null => runner shows picker
+    ) : Screen(
+        id = 74,
+        title = R.string.workflow_runner,
+        subtitle = R.string.workflow_runner_sub
+    )
+
     companion object : ScreenConstants by ScreenConstants
 
 }

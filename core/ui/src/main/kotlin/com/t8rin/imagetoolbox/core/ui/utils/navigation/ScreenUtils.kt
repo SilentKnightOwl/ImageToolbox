@@ -149,6 +149,9 @@ import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen.WallpapersExport
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen.Watermarking
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen.WebpTools
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen.WeightResize
+import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen.WorkflowEditor
+import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen.WorkflowRunner
+import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen.Workflows
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen.Zip
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -243,6 +246,9 @@ internal fun Screen.simpleName(): String = when (this) {
     is PdfTools.ImagesToPdf -> "PdfTools_ImagesToPdf"
     is PdfTools.ExtractPages -> "PdfTools_ExtractPages"
     is PdfTools.RemoveAnnotations -> "PdfTools_RemoveAnnotations"
+    is Workflows -> "Workflows"
+    is WorkflowEditor -> "Workflow_Editor"
+    is WorkflowRunner -> "Workflow_Runner"
 }
 
 internal fun Screen.icon(): ImageVector? = when (this) {
@@ -328,6 +334,9 @@ internal fun Screen.icon(): ImageVector? = when (this) {
     is PdfTools.ImagesToPdf -> Icons.Outlined.Scanner
     is PdfTools.ExtractPages -> Icons.Outlined.ArtTrack
     is PdfTools.RemoveAnnotations -> Icons.Outlined.BubbleDelete
+    is Workflows -> Icons.Outlined.VectorPolyline
+    is WorkflowEditor,
+    is WorkflowRunner -> null
 }
 
 internal fun Screen.twoToneIcon(): ImageVector? = when (this) {
@@ -413,6 +422,9 @@ internal fun Screen.twoToneIcon(): ImageVector? = when (this) {
     is PdfTools.ImagesToPdf -> Icons.TwoTone.Scanner
     is PdfTools.ExtractPages -> Icons.TwoTone.ArtTrack
     is PdfTools.RemoveAnnotations -> Icons.TwoTone.BubbleDelete
+    is Workflows -> Icons.TwoTone.VectorPolyline
+    is WorkflowEditor,
+    is WorkflowRunner -> null
 }
 
 internal object UriSerializer : KSerializer<AndroidUri> {
@@ -500,6 +512,7 @@ private object ScreenConstantsImpl : ScreenConstants {
             ),
             ScreenGroup(
                 entries = listOf(
+                    Workflows,
                     PdfTools,
                     DocumentScanner,
                     ScanQrCode(),
@@ -529,5 +542,5 @@ private object ScreenConstantsImpl : ScreenConstants {
             .sortedBy { it.id }
     }
 
-    override val FEATURES_COUNT = 88 + PdfTools.options.size
+    override val FEATURES_COUNT = 89 + PdfTools.options.size
 }

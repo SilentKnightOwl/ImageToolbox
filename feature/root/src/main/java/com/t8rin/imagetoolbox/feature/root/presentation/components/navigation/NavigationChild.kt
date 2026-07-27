@@ -180,6 +180,12 @@ import com.t8rin.imagetoolbox.presentation.app_logs.AppLogsContent
 import com.t8rin.imagetoolbox.presentation.app_logs.screenLogic.AppLogsComponent
 import com.t8rin.imagetoolbox.texture_generation.presentation.TextureGenerationContent
 import com.t8rin.imagetoolbox.texture_generation.presentation.screenLogic.TextureGenerationComponent
+import com.t8rin.imagetoolbox.feature.workflows.presentation.WorkflowEditorContent
+import com.t8rin.imagetoolbox.feature.workflows.presentation.WorkflowRunnerContent
+import com.t8rin.imagetoolbox.feature.workflows.presentation.WorkflowsContent
+import com.t8rin.imagetoolbox.feature.workflows.presentation.screenLogic.WorkflowEditorComponent
+import com.t8rin.imagetoolbox.feature.workflows.presentation.screenLogic.WorkflowRunnerComponent
+import com.t8rin.imagetoolbox.feature.workflows.presentation.screenLogic.WorkflowsComponent
 
 
 internal sealed interface NavigationChild {
@@ -596,5 +602,20 @@ internal sealed interface NavigationChild {
         NavigationChild {
         @Composable
         override fun Content() = RemoveAnnotationsPdfToolContent(component)
+    }
+
+    class Workflows(private val component: WorkflowsComponent) : NavigationChild {
+        @Composable
+        override fun Content() = WorkflowsContent(component)
+    }
+
+    class WorkflowEditor(private val component: WorkflowEditorComponent) : NavigationChild {
+        @Composable
+        override fun Content() = WorkflowEditorContent(component)
+    }
+
+    class WorkflowRunner(private val component: WorkflowRunnerComponent) : NavigationChild {
+        @Composable
+        override fun Content() = WorkflowRunnerContent(component)
     }
 }

@@ -76,6 +76,9 @@ import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen.WallpapersExport
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen.Watermarking
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen.WebpTools
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen.WeightResize
+import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen.WorkflowEditor
+import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen.WorkflowRunner
+import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen.Workflows
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen.Zip
 import com.t8rin.imagetoolbox.core.utils.appContext
 
@@ -203,6 +206,7 @@ private fun Screen.searchKeywordsRes(): Int? = when (this) {
     is PdfTools.ImagesToPdf -> R.string.search_keywords_pdf_images_to_pdf
     is PdfTools.ExtractPages -> R.string.search_keywords_pdf_extract_pages
     is PdfTools.RemoveAnnotations -> R.string.search_keywords_pdf_remove_annotations
+    is Workflows -> R.string.search_keywords_workflows
     is EasterEgg,
     is Main,
     is Settings,
@@ -210,5 +214,7 @@ private fun Screen.searchKeywordsRes(): Int? = when (this) {
     is LibrariesInfo,
     is LibraryDetails,
     is Help,
-    is UsageStatistics -> null
+    is UsageStatistics,
+    is WorkflowEditor,
+    is WorkflowRunner -> null
 }
